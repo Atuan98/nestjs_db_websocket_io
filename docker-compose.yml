@@ -1,0 +1,36 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres:13.2-alpine
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    restart: unless-stopped
+    ports:
+      - "2005:5432"
+    user: root
+    volumes:
+      - /home/tuan/db/data:/var/lib/postgresql/data
+      - /home/tuan/db/ekyc-compare.sql.gz:/docker-entrypoint-initdb.d/init.sql.gz
+      - /home/tuan/db/postgresql.conf:/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DATABASE_USER}", "-d", "${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  # api:
+  #   build: .
+  #   image: pos_payment_api
+  #   environment:
+  #     PROJECT_NAME: ${PROJECT_NAME}
+  #     # SQL_DATABASE_URL: 'postgresql+psycopg2://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}'
+  #   volumes:
+  #     - ./api/logs:/app/logs
+  #   ports:
+  #     - "5000:5000"
+  #   restart: on-failure
+  #   depends_on:
+  #     - db
+  #   command: webserver
